@@ -14,24 +14,18 @@ function formatDate(dateStr: string): string {
 export default function PostCard({ post }: PostCardProps) {
   return (
     <Link href={`/post/${post.slug}`}>
-      <article className="group flex flex-col md:flex-row justify-between items-start py-10 border-b border-border gap-8 hover:bg-white/30 transition-colors cursor-pointer">
+      <article className="group px-4 flex flex-col md:flex-row justify-between items-start py-8 border-b border-border gap-8 hover:bg-black/4 transition-colors cursor-pointer">
         {/* Text Content */}
         <div className="flex-1 order-2 md:order-1">
-          <div className="flex items-center gap-3 mb-4">
-            <time className="text-xs font-mono text-subtle tracking-widest">
-              {formatDate(post.created_at)}
-            </time>
+          <div className="flex items-center gap-3 mb-2">
+            <time className="text-xs font-mono text-subtle tracking-widest">{formatDate(post.created_at)}</time>
           </div>
 
           <div className="inline-flex items-start gap-2 group-hover:gap-3 transition-all mb-3">
-            <h2 className="text-xl md:text-2xl font-normal text-muted leading-snug group-hover:text-crimson transition-colors break-keep">
-              {post.title}
-            </h2>
+            <h2 className="text-xl md:text-2xl font-bold text-crimson break-keep">{post.title}</h2>
           </div>
 
-          <p className="text-subtle text-sm leading-relaxed max-w-2xl break-keep">
-            {post.excerpt}
-          </p>
+          <p className="text-subtle text-sm leading-relaxed max-w-2xl break-keep">{post.excerpt}</p>
         </div>
 
         {/* Square Thumbnail */}
