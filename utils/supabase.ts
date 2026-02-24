@@ -17,6 +17,8 @@ export const supabase = isSupabaseConfigured
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
+const DEFAULT_PAGE_SIZE = 10;
+
 export async function getPosts(): Promise<Post[]> {
   if (!supabase) return MOCK_POSTS;
 
@@ -32,6 +34,33 @@ export async function getPosts(): Promise<Post[]> {
   }
 
   return data as Post[];
+}
+
+export async function getPostsPage(
+  limit: number = DEFAULT_PAGE_SIZE,
+  offset: number = 0,
+): Promise<{ posts: Post[]; hasMore: boolean }> {
+  if (!supabase) {
+    const posts = MOCK_POSTS.slice(offset, offset + limit);
+    return { posts, hasMore: offset + limit < MOCK_POSTS.length };
+  }
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("published", true)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    console.error("[supabase] getPostsPage error:", error.message);
+    const posts = MOCK_POSTS.slice(offset, offset + limit);
+    return { posts, hasMore: offset + limit < MOCK_POSTS.length };
+  }
+
+  const posts = (data ?? []) as Post[];
+  const hasMore = posts.length === limit;
+  return { posts, hasMore };
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
