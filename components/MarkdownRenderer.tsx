@@ -64,6 +64,22 @@ const components: Components = {
   strong: ({ children }) => <strong className="font-semibold text-muted">{children}</strong>,
   em: ({ children }) => <em className="italic text-subtle">{children}</em>,
   hr: () => <hr className="border-t border-border my-12" />,
+  table: ({ children }) => (
+    <div className="overflow-x-auto my-10">
+      <table className="w-full text-sm border-collapse">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead>{children}</thead>,
+  tbody: ({ children }) => <tbody>{children}</tbody>,
+  tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
+  th: ({ children }) => (
+    <th className="text-left px-4 py-2.5 text-xs font-semibold tracking-wider text-subtle bg-paper whitespace-nowrap">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="px-4 py-2.5 text-muted leading-relaxed align-top">{children}</td>
+  ),
 };
 
 interface MarkdownRendererProps {
