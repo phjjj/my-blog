@@ -10,11 +10,11 @@ import type { Post } from "@/types/post";
 
 function generateSlug(title: string): string {
   return title
-    .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s-]/g, "")
+    .trim()
+    .replace(/[^\w가-힣\s-]/g, "") // 특수문자 제거, 한글·영문·숫자·하이픈 유지
     .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
+    .replace(/-{2,}/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function AdminWritePageInner() {
@@ -212,20 +212,6 @@ function AdminWritePageInner() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
-                슬러그 (URL)
-              </label>
-              <input
-                type="text"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="url-slug-here"
-                className="w-full bg-transparent border border-border px-3 py-2 text-sm font-mono text-muted outline-none focus:border-crimson transition-colors placeholder:text-border"
-              />
-            </div>
-          </div>
 
           <div>
             <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
