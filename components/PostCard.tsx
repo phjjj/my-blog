@@ -20,15 +20,15 @@ export default function PostCard({ post }: PostCardProps) {
       <article className="group px-4 flex flex-row justify-between items-center py-6 border-b border-border gap-6 hover:bg-black/4 transition-colors cursor-pointer">
         {/* Text Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
-            <time className="text-xs font-mono text-subtle tracking-widest">{formatDate(post.created_at)}</time>
-          </div>
-
           <div className="inline-flex items-start gap-2 group-hover:gap-3 transition-all mb-2">
             <h2 className="text-xl md:text-2xl font-bold text-crimson break-keep">{post.title}</h2>
           </div>
 
           <p className="text-subtle text-sm leading-relaxed break-keep line-clamp-2">{post.excerpt}</p>
+
+          <div className="flex items-center gap-3 mt-2">
+            <time className="text-xs text-subtle">{formatDate(post.created_at)}</time>
+          </div>
         </div>
 
         {/* Square Thumbnail — fixed 80×80, same on all screens */}
