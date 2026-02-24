@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Save } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
-import { upsertPost, supabase } from "@/utils/supabase";
+import { upsertPost, supabase, uploadImage } from "@/utils/supabase";
 import type { Post } from "@/types/post";
 
 function generateSlug(title: string): string {
@@ -31,6 +31,7 @@ function AdminWritePageInner() {
   const [isPreview, setIsPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [fetchStatus, setFetchStatus] = useState<"loading" | "done">(() =>
     editId && supabase ? "loading" : "done",
   );
@@ -70,6 +71,37 @@ function AdminWritePageInner() {
     },
     [editId],
   );
+
+  async function handleContentPaste(
+    e: React.ClipboardEvent<HTMLTextAreaElement>,
+  ) {
+    const imageFile = Array.from(e.clipboardData.items)
+      .find((item) => item.type.startsWith("image/"))
+      ?.getAsFile();
+
+    if (!imageFile) return;
+
+    e.preventDefault();
+
+    // await 이후 e.currentTarget은 null이 되므로 미리 캡처
+    const start = e.currentTarget.selectionStart;
+    const end = e.currentTarget.selectionEnd;
+
+    setIsUploading(true);
+    setSaveMessage(null);
+
+    try {
+      const url = await uploadImage(imageFile);
+      const markdownImage = `![이미지](${url})`;
+      setContent(
+        (prev) => prev.slice(0, start) + markdownImage + prev.slice(end),
+      );
+    } catch {
+      setSaveMessage("이미지 업로드에 실패했어요. Supabase Storage 설정을 확인해 주세요.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   async function handleSave(shouldPublish?: boolean) {
     if (!title.trim() || !content.trim()) {
@@ -241,9 +273,15 @@ function AdminWritePageInner() {
             <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-3 uppercase">
               본문 (Markdown)
             </label>
+            {isUploading && (
+              <p className="text-xs text-subtle tracking-widest mb-2">
+                이미지 업로드 중...
+              </p>
+            )}
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              onPaste={handleContentPaste}
               placeholder={`## 제목\n\n본문을 Markdown 형식으로 작성하세요.\n\n> 인용문\n\n\`\`\`tsx\n// 코드 블록\n\`\`\``}
               className="w-full bg-paper border border-border px-5 py-4 text-sm font-mono text-[#555555] outline-none focus:border-crimson transition-colors placeholder:text-border resize-none leading-relaxed"
               style={{ minHeight: "60vh" }}

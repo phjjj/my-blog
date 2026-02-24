@@ -133,6 +133,33 @@ export async function deletePost(id: string): Promise<boolean> {
   return true;
 }
 
+// ─── Storage ──────────────────────────────────────────────────────────────────
+
+const STORAGE_BUCKET = "blog-images";
+
+/**
+ * 이미지 파일을 Supabase Storage에 업로드하고 공개 URL을 반환합니다.
+ * 로그인된 사용자(어드민)만 호출해야 합니다.
+ */
+export async function uploadImage(file: File): Promise<string> {
+  if (!supabase) throw new Error("Supabase가 설정되지 않았어요.");
+
+  const ext = file.name.split(".").pop() ?? "png";
+  const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(filename, file, { upsert: false });
+
+  if (error) throw new Error(error.message);
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filename);
+
+  return publicUrl;
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export async function signIn(email: string, password: string) {
