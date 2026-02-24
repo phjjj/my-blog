@@ -24,17 +24,15 @@ const notoSansKR = Noto_Sans_KR({
 
 export const metadata: Metadata = {
   title: {
-    default: "데브.로그",
-    template: "%s | 데브.로그",
+    default: "PHJ.dev",
+    template: "%s | PHJ.dev",
   },
-  description:
-    "생각과 코드 조각, 그리고 아키텍처 탐구에 대한 디지털 아카이브. 소프트웨어를 만들어가는 여정을 기록합니다.",
+  description: "생각과 코드 조각을 기록하는 공간",
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    title: "데브.로그",
-    description:
-      "생각과 코드 조각, 그리고 아키텍처 탐구에 대한 디지털 아카이브.",
+    title: "PHJ.dev",
+    description: "생각과 코드 조각을 기록하는 공간",
   },
 };
 
@@ -45,9 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSansKR.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} ${notoSansKR.variable} antialiased`}>
         {children}
       </body>
     </html>
