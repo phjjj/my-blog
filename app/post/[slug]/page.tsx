@@ -7,6 +7,7 @@ import MarkdownRenderer from "@/components/MarkdownRenderer";
 import ScrollTopButton from "@/components/ScrollTopButton";
 import { getPostBySlug, getPosts } from "@/utils/supabase";
 import Image from "next/image";
+import { resolveThumbnail } from "@/lib/postUtils";
 
 export const revalidate = 60;
 
@@ -16,12 +17,12 @@ interface PageProps {
 
 export async function generateStaticParams() {
   const posts = await getPosts();
-  return posts.map((post) => ({ slug: post.slug }));
+  return posts.map((post) => ({ slug: encodeURIComponent(post.slug) }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const post = await getPostBySlug(decodeURIComponent(slug));
 
   if (!post) return { title: "게시글을 찾을 수 없어요" };
 
@@ -31,7 +32,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: post.image_url ? [{ url: post.image_url }] : [],
+      images: resolveThumbnail(post.image_url, post.content)
+        ? [{ url: resolveThumbnail(post.image_url, post.content)! }]
+        : [],
     },
   };
 }
@@ -43,9 +46,11 @@ function formatDate(dateStr: string): string {
 
 export default async function PostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const post = await getPostBySlug(decodeURIComponent(slug));
 
   if (!post) notFound();
+
+  const heroImage = resolveThumbnail(post.image_url, post.content);
 
   return (
     <div className="min-h-screen bg-cream text-muted pb-32">
@@ -72,16 +77,17 @@ export default async function PostPage({ params }: PageProps) {
         </header>
 
         {/* Hero Image */}
-        {post.image_url && (
+        {heroImage && (
           <div className="max-w-2xl mx-auto mb-16">
-            <div className="w-full h-[260px] md:h-[380px] bg-border relative overflow-hidden">
-              <div className="absolute inset-0 bg-cream/10 mix-blend-overlay z-10" />
+            <div className="w-full bg-paper relative overflow-hidden">
               <Image
-                src={post.image_url}
+                src={heroImage}
                 alt={post.title}
-                fill
+                width={672}
+                height={0}
                 sizes="(max-width: 768px) 100vw, 672px"
-                className="object-cover grayscale-30 contrast-[0.9]"
+                className="w-full h-auto grayscale-30 contrast-[0.9]"
+                style={{ height: "auto" }}
               />
             </div>
           </div>

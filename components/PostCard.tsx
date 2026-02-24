@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Post } from "@/types/post";
+import { resolveThumbnail } from "@/lib/postUtils";
 
 interface PostCardProps {
   post: Post;
@@ -12,33 +13,36 @@ function formatDate(dateStr: string): string {
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  const thumbnail = resolveThumbnail(post.image_url, post.content);
+
   return (
     <Link href={`/post/${post.slug}`}>
-      <article className="group px-4 flex flex-col md:flex-row justify-between items-start py-8 border-b border-border gap-8 hover:bg-black/4 transition-colors cursor-pointer">
+      <article className="group px-4 flex flex-row justify-between items-center py-6 border-b border-border gap-6 hover:bg-black/4 transition-colors cursor-pointer">
         {/* Text Content */}
-        <div className="flex-1 order-2 md:order-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
             <time className="text-xs font-mono text-subtle tracking-widest">{formatDate(post.created_at)}</time>
           </div>
 
-          <div className="inline-flex items-start gap-2 group-hover:gap-3 transition-all mb-3">
+          <div className="inline-flex items-start gap-2 group-hover:gap-3 transition-all mb-2">
             <h2 className="text-xl md:text-2xl font-bold text-crimson break-keep">{post.title}</h2>
           </div>
 
-          <p className="text-subtle text-sm leading-relaxed max-w-2xl break-keep">{post.excerpt}</p>
+          <p className="text-subtle text-sm leading-relaxed break-keep line-clamp-2">{post.excerpt}</p>
         </div>
 
-        {/* Square Thumbnail */}
-        <div className="order-1 md:order-2 shrink-0 overflow-hidden bg-border w-full md:w-32 h-48 md:h-32 relative group-hover:opacity-80 transition-opacity">
-          <div className="absolute inset-0 bg-cream/10 mix-blend-overlay z-10" />
-          <Image
-            src={post.image_url}
-            alt={post.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 8rem"
-            className="object-cover grayscale-40 contrast-[0.9]"
-          />
-        </div>
+        {/* Square Thumbnail — fixed 80×80, same on all screens */}
+        {thumbnail && (
+          <div className="shrink-0 w-20 h-20 overflow-hidden bg-paper relative group-hover:opacity-80 transition-opacity">
+            <Image
+              src={thumbnail}
+              alt={post.title}
+              fill
+              sizes="5rem"
+              className="object-contain grayscale-40 contrast-[0.9]"
+            />
+          </div>
+        )}
       </article>
     </Link>
   );
