@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PenLine, Eye, EyeOff } from "lucide-react";
-import { getAllPostsForAdmin } from "@/utils/supabase";
+import { getAllPostsForAdmin } from "@/utils/supabaseAdmin";
+import type { Post } from "@/types/post";
 import AdminDeleteButton from "./AdminDeleteButton";
 import AdminSignOutButton from "./AdminSignOutButton";
 
@@ -12,7 +13,17 @@ function formatDate(dateStr: string): string {
 }
 
 export default async function AdminPage() {
-  const posts = await getAllPostsForAdmin();
+  let posts: Post[] = [];
+  let fetchErrorMessage: string | null = null;
+
+  try {
+    posts = await getAllPostsForAdmin();
+  } catch (err) {
+    fetchErrorMessage =
+      err instanceof Error
+        ? err.message
+        : "어드민 글 목록을 불러오지 못했어요.";
+  }
 
   return (
     <div className="min-h-screen bg-cream text-muted pb-32">
@@ -35,6 +46,20 @@ export default async function AdminPage() {
       </nav>
 
       <main className="max-w-4xl mx-auto px-6 mt-12">
+        {fetchErrorMessage && (
+          <div className="mb-10 border border-border bg-paper px-5 py-4 text-sm text-muted leading-relaxed">
+            <p className="font-semibold mb-2">설정이 더 필요해요.</p>
+            <p className="text-subtle">
+              Supabase 임시저장 글까지 보려면 서버에서 service_role 키로 조회해야 해요.
+              <br />
+              `.env.local`에 `SUPABASE_SERVICE_ROLE_KEY`를 넣고 dev 서버를 재시작해 주세요.
+            </p>
+            <p className="text-xs text-subtle mt-3 font-mono break-all">
+              {fetchErrorMessage}
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-end justify-between mb-12 border-b border-border pb-8">
           <div>
