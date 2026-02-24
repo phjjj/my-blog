@@ -19,9 +19,7 @@ export async function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
 
@@ -57,41 +55,35 @@ export default async function PostPage({ params }: PageProps) {
         {/* Back Button */}
         <Link
           href="/"
-          className="group inline-flex items-center gap-2 text-xs font-semibold tracking-widest text-subtle hover:text-crimson transition-colors mb-16"
-        >
-          <ArrowLeft
-            size={16}
-            className="group-hover:-translate-x-1 transition-transform"
-          />
+          className="group inline-flex items-center gap-2 text-xs font-semibold tracking-widest text-subtle hover:text-crimson transition-colors mb-16">
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           목록으로
         </Link>
 
         {/* Post Header */}
-        <header className="mb-12">
+        <header className="mb-12 max-w-2xl mx-auto">
           <time className="text-sm font-mono text-subtle tracking-widest block mb-6">
             {formatDate(post.created_at)}
           </time>
 
-          <h1 className="text-3xl md:text-5xl font-light text-muted leading-tight break-keep mb-8">
-            {post.title}
-          </h1>
+          <h1 className="text-3xl md:text-5xl font-bold text-muted leading-tight break-keep mb-8">{post.title}</h1>
 
-          <p className="text-subtle text-lg leading-relaxed max-w-2xl break-keep">
-            {post.excerpt}
-          </p>
+          <p className="text-subtle text-lg leading-relaxed max-w-2xl mx-auto break-keep">{post.excerpt}</p>
         </header>
 
         {/* Hero Image */}
         {post.image_url && (
-          <div className="w-full h-[300px] md:h-[450px] bg-border mb-16 relative overflow-hidden">
-            <div className="absolute inset-0 bg-cream/10 mix-blend-overlay z-10" />
-            <Image
-              src={post.image_url}
-              alt={post.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 896px"
-              className="object-cover grayscale-30 contrast-[0.9]"
-            />
+          <div className="max-w-2xl mx-auto mb-16">
+            <div className="w-full h-[260px] md:h-[380px] bg-border relative overflow-hidden">
+              <div className="absolute inset-0 bg-cream/10 mix-blend-overlay z-10" />
+              <Image
+                src={post.image_url}
+                alt={post.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 672px"
+                className="object-cover grayscale-30 contrast-[0.9]"
+              />
+            </div>
           </div>
         )}
 
@@ -101,7 +93,7 @@ export default async function PostPage({ params }: PageProps) {
         </div>
 
         {/* Post Footer */}
-        <div className="max-w-2xl mx-auto mt-24 pt-12 border-t border-border flex justify-between items-center text-xs font-semibold tracking-widest text-subtle">
+        <div className="max-w-2xl mx-auto mt-24 pt-12 border-border flex justify-between items-center text-xs font-semibold tracking-widest text-subtle">
           <p>END OF ARTICLE</p>
           <ScrollTopButton />
         </div>

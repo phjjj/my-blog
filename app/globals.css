@@ -3,19 +3,14 @@
 @theme inline {
   --color-cream: #faf7eb;
   --color-crimson: #7f0019;
-  --color-muted: #666666;
-  --color-subtle: #999999;
+  --color-muted: #3d3d38;
+  --color-subtle: #888880;
   --color-border: #cccccc;
   --color-paper: #f4f1e1;
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-muji: var(--font-muji);
-}
-
-:root {
-  --background: #faf7eb;
-  --foreground: #666666;
 }
 
 * {
@@ -28,7 +23,7 @@ html {
 
 body {
   background-color: #faf7eb;
-  color: #666666;
+  color: #3d3d38;
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -53,143 +48,20 @@ body::before {
   background-size: 200px 200px;
 }
 
-/* Prose (article body) typography styles */
-.prose {
-  color: #666666;
-  line-height: 1.9;
-  font-size: 1rem;
-}
-
-.prose p {
-  margin-bottom: 1.5rem;
-  break-inside: avoid-column;
-  word-break: keep-all;
-}
-
-.prose h2 {
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: #666666;
-  margin-top: 4rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #cccccc;
-  letter-spacing: 0.02em;
-}
-
-.prose h3 {
-  font-size: 1.25rem;
-  font-weight: 400;
-  color: #666666;
-  margin-top: 3rem;
-  margin-bottom: 1rem;
-  letter-spacing: 0.02em;
-}
-
-.prose h4 {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #666666;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-}
-
-.prose blockquote {
-  border-left: 2px solid #7f0019;
-  padding-left: 1.5rem;
-  margin: 2.5rem 0;
-  font-style: italic;
-  color: #999999;
-  font-size: 1.1rem;
-  line-height: 1.8;
-}
-
-.prose blockquote p {
-  margin-bottom: 0;
-}
-
-.prose code {
-  font-family: var(--font-geist-mono), "Courier New", monospace;
-  background-color: #f4f1e1;
-  padding: 0.15em 0.4em;
-  border-radius: 2px;
-  font-size: 0.875em;
-  color: #555555;
-}
-
-.prose pre {
-  background-color: #f4f1e1;
-  border: 1px solid #cccccc;
-  border-radius: 2px;
-  padding: 1.5rem;
-  overflow-x: auto;
-  margin: 2.5rem 0;
-}
-
-.prose pre code {
-  background: none;
-  padding: 0;
-  font-size: 0.875rem;
-  color: #555555;
-  line-height: 1.7;
-}
-
-.prose a {
-  color: #7f0019;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.prose a:hover {
-  opacity: 0.75;
-}
-
-.prose ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.prose ol {
-  list-style-type: decimal;
-  padding-left: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.prose li {
-  margin-bottom: 0.5rem;
-}
-
-.prose strong {
-  color: #555555;
-  font-weight: 600;
-}
-
-.prose hr {
-  border: none;
-  border-top: 1px solid #cccccc;
-  margin: 3rem 0;
+/* Override highlight.js background — keep cream/paper color */
+.hljs {
+  background: transparent !important;
 }
 
 /* Animations */
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
