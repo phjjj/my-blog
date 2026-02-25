@@ -26,7 +26,7 @@ export default async function HomePage() {
           <h1 className="text-4xl md:text-6xl font-bold mb-8">PHJ</h1>
 
           <a
-            href="https://github.com"
+            href="https://github.com/phjjj"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex text-subtle hover:text-crimson transition-colors mb-8"
