@@ -15,14 +15,24 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+/** URL/레거시 퍼센트 인코딩과 일치시키기 위해 안전하게 디코드 */
+function slugFromParam(param: string): string {
+  try {
+    return decodeURIComponent(param);
+  } catch {
+    return param;
+  }
+}
+
 export async function generateStaticParams() {
   const posts = await getPosts();
-  return posts.map((post) => ({ slug: encodeURIComponent(post.slug) }));
+  // 퍼센트 인코딩된 slug를 쓰면 정적 빌드 경로 길이가 수배로 늘어 ENAMETOOLONG이 납니다.
+  return posts.map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(decodeURIComponent(slug));
+  const post = await getPostBySlug(slugFromParam(slug));
 
   if (!post) return { title: "게시글을 찾을 수 없어요" };
 
@@ -46,7 +56,7 @@ function formatDate(dateStr: string): string {
 
 export default async function PostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = await getPostBySlug(decodeURIComponent(slug));
+  const post = await getPostBySlug(slugFromParam(slug));
 
   if (!post) notFound();
 

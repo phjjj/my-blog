@@ -73,14 +73,15 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     .select("*")
     .eq("slug", slug)
     .eq("published", true)
-    .single();
+    .limit(1);
 
   if (error) {
     console.error("[supabase] getPostBySlug error:", error.message);
     return MOCK_POSTS.find((p) => p.slug === slug) ?? null;
   }
 
-  return data as Post;
+  const row = data?.[0];
+  return row ? (row as Post) : MOCK_POSTS.find((p) => p.slug === slug) ?? null;
 }
 
 // ─── Admin API (requires service role / auth) ─────────────────────────────────
