@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, Save } from "lucide-react";
+import { Save, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { upsertPost, supabase, uploadImage } from "@/utils/supabase";
 import type { Post } from "@/types/post";
@@ -11,7 +11,7 @@ import type { Post } from "@/types/post";
 function generateSlug(title: string): string {
   return title
     .trim()
-    .replace(/[^\w가-힣\s-]/g, "") // 특수문자 제거, 한글·영문·숫자·하이픈 유지
+    .replace(/[^\w가-힣\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-{2,}/g, "-")
     .replace(/^-|-$/g, "");
@@ -28,28 +28,29 @@ function AdminWritePageInner() {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [published, setPublished] = useState(false);
-  const [isPreview, setIsPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [metaOpen, setMetaOpen] = useState(false);
   const [fetchStatus, setFetchStatus] = useState<"loading" | "done">(() =>
     editId && supabase ? "loading" : "done",
   );
+
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const isSyncingRef = useRef(false);
+
   const isLoading = fetchStatus === "loading";
 
   useEffect(() => {
     if (!editId || !supabase) return;
-
     supabase
       .from("posts")
       .select("*")
       .eq("id", editId)
       .single()
       .then(({ data, error }) => {
-        if (error || !data) {
-          setFetchStatus("done");
-          return;
-        }
+        if (error || !data) { setFetchStatus("done"); return; }
         const post = data as Post;
         setTitle(post.title);
         setSlug(post.slug);
@@ -62,42 +63,41 @@ function AdminWritePageInner() {
   }, [editId]);
 
   const handleTitleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newTitle = e.target.value;
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newTitle = e.target.value.replace(/\n/g, "");
       setTitle(newTitle);
-      if (!editId) {
-        setSlug(generateSlug(newTitle));
-      }
+      if (!editId) setSlug(generateSlug(newTitle));
     },
     [editId],
   );
 
-  async function handleContentPaste(
-    e: React.ClipboardEvent<HTMLTextAreaElement>,
-  ) {
+  // 에디터 스크롤 → 미리보기 동기화
+  const handleEditorScroll = useCallback(() => {
+    if (isSyncingRef.current || !editorRef.current || !previewRef.current) return;
+    isSyncingRef.current = true;
+    const el = editorRef.current;
+    const ratio = el.scrollTop / (el.scrollHeight - el.clientHeight || 1);
+    const pr = previewRef.current;
+    pr.scrollTop = ratio * (pr.scrollHeight - pr.clientHeight);
+    requestAnimationFrame(() => { isSyncingRef.current = false; });
+  }, []);
+
+  async function handleContentPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
     const imageFile = Array.from(e.clipboardData.items)
       .find((item) => item.type.startsWith("image/"))
       ?.getAsFile();
-
     if (!imageFile) return;
-
     e.preventDefault();
-
-    // await 이후 e.currentTarget은 null이 되므로 미리 캡처
     const start = e.currentTarget.selectionStart;
     const end = e.currentTarget.selectionEnd;
-
     setIsUploading(true);
     setSaveMessage(null);
-
     try {
       const url = await uploadImage(imageFile);
       const markdownImage = `![이미지](${url})`;
-      setContent(
-        (prev) => prev.slice(0, start) + markdownImage + prev.slice(end),
-      );
+      setContent((prev) => prev.slice(0, start) + markdownImage + prev.slice(end));
     } catch {
-      setSaveMessage("이미지 업로드에 실패했어요. Supabase Storage 설정을 확인해 주세요.");
+      setSaveMessage("이미지 업로드에 실패했어요.");
     } finally {
       setIsUploading(false);
     }
@@ -108,10 +108,8 @@ function AdminWritePageInner() {
       setSaveMessage("제목과 본문을 입력해 주세요.");
       return;
     }
-
     setIsSaving(true);
     setSaveMessage(null);
-
     const postData = {
       ...(editId ? { id: editId } : {}),
       title: title.trim(),
@@ -122,18 +120,13 @@ function AdminWritePageInner() {
       tags: [],
       published: shouldPublish !== undefined ? shouldPublish : published,
     };
-
     const result = await upsertPost(postData);
-
     if (result) {
       setSaveMessage(shouldPublish ? "발행되었어요!" : "임시저장 되었어요.");
-      setTimeout(() => {
-        router.push("/admin");
-      }, 1000);
+      setTimeout(() => router.push("/admin"), 1000);
     } else {
       setSaveMessage("저장에 실패했어요. 다시 시도해 주세요.");
     }
-
     setIsSaving(false);
   }
 
@@ -146,9 +139,9 @@ function AdminWritePageInner() {
   }
 
   return (
-    <div className="min-h-screen bg-cream text-muted">
-      {/* Editor Nav */}
-      <nav className="w-full border-b border-border px-6 py-4 flex justify-between items-center bg-cream/90 backdrop-blur-sm sticky top-0 z-40">
+    <div className="h-screen bg-cream text-muted flex flex-col overflow-hidden">
+      {/* Nav */}
+      <nav className="flex-none w-full border-b border-border px-6 py-3 flex justify-between items-center bg-cream/90 backdrop-blur-sm z-40">
         <div className="flex items-center gap-4">
           <Link
             href="/admin"
@@ -163,18 +156,21 @@ function AdminWritePageInner() {
         </div>
 
         <div className="flex items-center gap-3">
+          {isUploading && (
+            <span className="text-xs text-subtle tracking-wide animate-pulse">이미지 업로드 중...</span>
+          )}
           {saveMessage && (
-            <span className="text-xs text-subtle tracking-wide">
-              {saveMessage}
-            </span>
+            <span className="text-xs text-subtle tracking-wide">{saveMessage}</span>
           )}
 
           <button
-            onClick={() => setIsPreview(!isPreview)}
+            onClick={() => setMetaOpen((v) => !v)}
             className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-subtle hover:text-crimson transition-colors uppercase border border-border px-3 py-2"
+            title="메타 정보"
           >
-            {isPreview ? <EyeOff size={12} /> : <Eye size={12} />}
-            {isPreview ? "편집" : "미리보기"}
+            <Settings size={12} />
+            메타
+            {metaOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
           </button>
 
           <button
@@ -196,37 +192,22 @@ function AdminWritePageInner() {
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Metadata Fields */}
-        <div className="space-y-5 mb-10 pb-10 border-b border-border">
-          <div>
+      {/* Meta panel (collapsible) */}
+      {metaOpen && (
+        <div className="flex-none border-b border-border bg-paper/60 px-8 py-5 grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
+          <div className="md:col-span-1">
             <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
-              제목
+              슬러그
             </label>
             <input
               type="text"
-              value={title}
-              onChange={handleTitleChange}
-              placeholder="게시글 제목을 입력하세요"
-              className="w-full bg-transparent border-b border-border py-2 text-2xl font-light text-muted outline-none focus:border-crimson transition-colors placeholder:text-border break-keep"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="url-slug"
+              className="w-full bg-transparent border-b border-border py-1.5 text-sm font-mono text-muted outline-none focus:border-crimson transition-colors placeholder:text-border"
             />
           </div>
-
-
-          <div>
-            <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
-              요약 (목록에 표시)
-            </label>
-            <textarea
-              value={excerpt}
-              onChange={(e) => setExcerpt(e.target.value)}
-              placeholder="게시글을 간략하게 소개하는 한두 문장을 작성하세요"
-              rows={2}
-              className="w-full bg-transparent border border-border px-3 py-2 text-sm text-muted outline-none focus:border-crimson transition-colors placeholder:text-border resize-none"
-            />
-          </div>
-
-          <div>
+          <div className="md:col-span-1">
             <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
               썸네일 이미지 URL
             </label>
@@ -234,46 +215,74 @@ function AdminWritePageInner() {
               type="text"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/..."
-              className="w-full bg-transparent border border-border px-3 py-2 text-sm font-mono text-muted outline-none focus:border-crimson transition-colors placeholder:text-border"
+              placeholder="https://..."
+              className="w-full bg-transparent border-b border-border py-1.5 text-sm font-mono text-muted outline-none focus:border-crimson transition-colors placeholder:text-border"
+            />
+          </div>
+          <div className="md:col-span-1">
+            <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
+              요약
+            </label>
+            <input
+              type="text"
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              placeholder="목록에 표시될 한두 문장"
+              className="w-full bg-transparent border-b border-border py-1.5 text-sm text-muted outline-none focus:border-crimson transition-colors placeholder:text-border"
             />
           </div>
         </div>
+      )}
 
-        {/* Editor / Preview */}
-        {isPreview ? (
-          <div className="max-w-2xl mx-auto animate-fade-in">
-            <p className="text-[10px] font-semibold tracking-widest text-subtle uppercase mb-8 text-center">
-              미리보기
-            </p>
+      {/* Title */}
+      <div className="flex-none px-8 pt-8 pb-4 border-b border-border/60">
+        <textarea
+          value={title}
+          onChange={handleTitleChange}
+          onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
+          placeholder="제목을 입력하세요"
+          rows={1}
+          className="w-full bg-transparent text-3xl font-light text-muted outline-none placeholder:text-border resize-none leading-snug break-keep"
+          style={{ maxWidth: "100%" }}
+        />
+      </div>
+
+      {/* Split editor */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Editor pane */}
+        <div className="flex-1 flex flex-col border-r border-border min-w-0">
+          <div className="flex-none px-4 py-2 border-b border-border/40 flex items-center gap-2">
+            <span className="text-[10px] font-semibold tracking-widest text-subtle uppercase">Markdown</span>
+          </div>
+          <textarea
+            ref={editorRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onPaste={handleContentPaste}
+            onScroll={handleEditorScroll}
+            placeholder={`## 제목\n\n본문을 Markdown 형식으로 작성하세요.\n\n> 인용문\n\n\`\`\`tsx\n// 코드 블록\n\`\`\``}
+            className="flex-1 w-full bg-transparent px-8 py-6 text-sm font-mono text-[#555555] outline-none placeholder:text-border resize-none leading-[1.85] overflow-y-auto"
+          />
+        </div>
+
+        {/* Preview pane */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-none px-4 py-2 border-b border-border/40 flex items-center gap-2">
+            <span className="text-[10px] font-semibold tracking-widest text-subtle uppercase">미리보기</span>
+          </div>
+          <div
+            ref={previewRef}
+            className="flex-1 overflow-y-auto px-8 py-6"
+          >
             {content ? (
               <MarkdownRenderer content={content} />
             ) : (
-              <p className="text-border text-sm text-center tracking-wide">
-                본문을 입력하면 여기에 미리보기가 표시돼요.
+              <p className="text-border text-sm text-center tracking-wide mt-16">
+                왼쪽에 내용을 입력하면 여기에 미리보기가 표시돼요.
               </p>
             )}
           </div>
-        ) : (
-          <div>
-            <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-3 uppercase">
-              본문 (Markdown)
-            </label>
-            {isUploading && (
-              <p className="text-xs text-subtle tracking-widest mb-2">
-                이미지 업로드 중...
-              </p>
-            )}
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onPaste={handleContentPaste}
-              placeholder={`## 제목\n\n본문을 Markdown 형식으로 작성하세요.\n\n> 인용문\n\n\`\`\`tsx\n// 코드 블록\n\`\`\``}
-              className="w-full bg-paper border border-border px-5 py-4 text-sm font-mono text-[#555555] outline-none focus:border-crimson transition-colors placeholder:text-border resize-none leading-relaxed"
-              style={{ minHeight: "60vh" }}
-            />
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
