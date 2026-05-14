@@ -6,14 +6,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 const isSupabaseConfigured =
-  supabaseUrl &&
-  supabaseAnonKey &&
-  supabaseUrl !== "your-supabase-url" &&
-  supabaseAnonKey !== "your-supabase-anon-key";
+  supabaseUrl && supabaseAnonKey && supabaseUrl !== "your-supabase-url" && supabaseAnonKey !== "your-supabase-anon-key";
 
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl!, supabaseAnonKey!)
-  : null;
+export const supabase = isSupabaseConfigured ? createClient(supabaseUrl!, supabaseAnonKey!) : null;
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -68,12 +63,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     return MOCK_POSTS.find((p) => p.slug === slug) ?? null;
   }
 
-  const { data, error } = await supabase
-    .from("posts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("published", true)
-    .limit(1);
+  const { data, error } = await supabase.from("posts").select("*").eq("slug", slug).eq("published", true).limit(1);
 
   if (error) {
     console.error("[supabase] getPostBySlug error:", error.message);
@@ -81,7 +71,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   }
 
   const row = data?.[0];
-  return row ? (row as Post) : MOCK_POSTS.find((p) => p.slug === slug) ?? null;
+  return row ? (row as Post) : (MOCK_POSTS.find((p) => p.slug === slug) ?? null);
 }
 
 // ─── Admin API (requires service role / auth) ─────────────────────────────────
@@ -89,10 +79,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 export async function getAllPostsForAdmin(): Promise<Post[]> {
   if (!supabase) return MOCK_POSTS;
 
-  const { data, error } = await supabase
-    .from("posts")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
 
   if (error) {
     console.error("[supabase] getAllPostsForAdmin error:", error.message);
@@ -102,16 +89,10 @@ export async function getAllPostsForAdmin(): Promise<Post[]> {
   return data as Post[];
 }
 
-export async function upsertPost(
-  post: Omit<Post, "id" | "created_at"> & { id?: string },
-): Promise<Post | null> {
+export async function upsertPost(post: Omit<Post, "id" | "created_at"> & { id?: string }): Promise<Post | null> {
   if (!supabase) return null;
 
-  const { data, error } = await supabase
-    .from("posts")
-    .upsert(post)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("posts").upsert(post).select().single();
 
   if (error) {
     console.error("[supabase] upsertPost error:", error.message);
@@ -148,9 +129,7 @@ export async function uploadImage(file: File): Promise<string> {
   const ext = file.name.split(".").pop() ?? "png";
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-  const { error } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .upload(filename, file, { upsert: false });
+  const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(filename, file, { upsert: false });
 
   if (error) throw new Error(error.message);
 

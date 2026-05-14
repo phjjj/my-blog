@@ -7,38 +7,46 @@ import type { Components } from "react-markdown";
 
 const components: Components = {
   h1: ({ children }) => (
-    <h1 className="text-3xl font-bold text-muted mt-16 mb-6 leading-snug break-keep">{children}</h1>
+    <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-muted mt-16 mb-8 leading-[1.2] break-keep">
+      {children}
+    </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-2xl font-semibold text-muted mt-14 mb-5 border-b border-border pb-3 leading-snug break-keep">
+    <h2 className="text-[1.9rem] md:text-[2.1rem] font-semibold tracking-tight text-muted mt-16 mb-6 leading-[1.3] break-keep">
       {children}
     </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-xl font-semibold text-muted mt-10 mb-4 leading-snug break-keep">{children}</h3>
+    <h3 className="text-[1.45rem] md:text-[1.6rem] font-semibold text-muted mt-12 mb-4 leading-[1.35] break-keep">
+      {children}
+    </h3>
   ),
-  h4: ({ children }) => <h4 className="text-base font-semibold text-muted mt-8 mb-3 break-keep">{children}</h4>,
-  p: ({ children }) => <p className="mb-6 leading-[1.9] break-keep">{children}</p>,
+  h4: ({ children }) => (
+    <h4 className="text-[1.15rem] font-semibold text-muted mt-8 mb-3 leading-[1.45] break-keep">{children}</h4>
+  ),
+  p: ({ children }) => <p className="mb-8 leading-[1.95] tracking-[0.005em] text-muted break-keep">{children}</p>,
   blockquote: ({ children }) => (
-    <blockquote className="border-l-2 border-crimson pl-6 my-10 italic text-muted text-lg leading-relaxed">
+    <blockquote className="border-l-3 border-crimson/80 pl-6 pr-2 my-12 text-muted/90 text-[1.05em] leading-[1.9]">
       {children}
     </blockquote>
   ),
   pre: ({ children }) => (
-    <div className="my-10 bg-paper border border-border rounded-sm overflow-hidden">
-      <div className="flex gap-2 px-4 py-3 border-b border-border/50">
+    <div className="my-12 bg-paper/80 border border-border/70 rounded-md overflow-hidden">
+      <div className="flex gap-2 px-4 py-3 border-b border-border/40">
         <div className="w-2.5 h-2.5 rounded-full bg-border" />
         <div className="w-2.5 h-2.5 rounded-full bg-border" />
         <div className="w-2.5 h-2.5 rounded-full bg-border" />
       </div>
-      <pre className="p-6 overflow-x-auto text-sm font-mono text-[#555555] leading-relaxed">{children}</pre>
+      <pre className="p-6 overflow-x-auto text-[0.92rem] font-mono text-[#4f4f49] leading-[1.75]">{children}</pre>
     </div>
   ),
   code: ({ className, children, ...props }) => {
     const isInline = !className;
     if (isInline) {
       return (
-        <code className="bg-paper px-1.5 py-0.5 rounded-sm text-sm font-mono text-[#555555]" {...props}>
+        <code
+          className="bg-paper/90 border border-border/50 px-1.5 py-0.5 rounded text-[0.88em] font-mono text-[#4f4f49]"
+          {...props}>
           {children}
         </code>
       );
@@ -54,19 +62,19 @@ const components: Components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-crimson underline underline-offset-2 hover:opacity-75 transition-opacity">
+      className="text-crimson underline decoration-crimson/55 underline-offset-4 hover:decoration-crimson transition-colors">
       {children}
     </a>
   ),
-  ul: ({ children }) => <ul className="list-disc pl-6 mb-6 space-y-1.5">{children}</ul>,
-  ol: ({ children }) => <ol className="list-decimal pl-6 mb-6 space-y-1.5">{children}</ol>,
-  li: ({ children }) => <li className="leading-[1.8] text-muted">{children}</li>,
+  ul: ({ children }) => <ul className="list-disc pl-7 mb-8 space-y-2">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal pl-7 mb-8 space-y-2">{children}</ol>,
+  li: ({ children }) => <li className="leading-[1.9] text-muted">{children}</li>,
   strong: ({ children }) => <strong className="font-semibold text-muted">{children}</strong>,
-  em: ({ children }) => <em className="italic text-subtle">{children}</em>,
+  em: ({ children }) => <em className="italic text-[#5a5a54]">{children}</em>,
   hr: () => <hr className="border-t border-border my-12" />,
   table: ({ children }) => (
-    <div className="overflow-x-auto my-10">
-      <table className="w-full text-sm border-collapse">{children}</table>
+    <div className="overflow-x-auto my-12">
+      <table className="w-full text-[0.95rem] border-collapse">{children}</table>
     </div>
   ),
   thead: ({ children }) => <thead>{children}</thead>,
@@ -77,9 +85,7 @@ const components: Components = {
       {children}
     </th>
   ),
-  td: ({ children }) => (
-    <td className="px-4 py-2.5 text-muted leading-relaxed align-top">{children}</td>
-  ),
+  td: ({ children }) => <td className="px-4 py-2.5 text-muted leading-relaxed align-top">{children}</td>,
 };
 
 interface MarkdownRendererProps {
@@ -88,7 +94,7 @@ interface MarkdownRendererProps {
 
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
-    <div className="text-muted text-base md:text-lg">
+    <div className="text-muted text-[1.06rem] md:text-[1.13rem]">
       <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={components}>
         {content}
       </ReactMarkdown>
