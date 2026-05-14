@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Save, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
-import { upsertPost, supabase, uploadImage } from "@/utils/supabase";
+import { supabase, uploadImage } from "@/utils/supabase";
 import type { Post } from "@/types/post";
 
 function generateSlug(title: string): string {
@@ -120,11 +120,16 @@ function AdminWritePageInner() {
       tags: [],
       published: shouldPublish !== undefined ? shouldPublish : published,
     };
-    const result = await upsertPost(postData);
-    if (result) {
+    try {
+      const res = await fetch("/api/admin/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(postData),
+      });
+      if (!res.ok) throw new Error();
       setSaveMessage(shouldPublish ? "발행되었어요!" : "임시저장 되었어요.");
       setTimeout(() => router.push("/admin"), 1000);
-    } else {
+    } catch {
       setSaveMessage("저장에 실패했어요. 다시 시도해 주세요.");
     }
     setIsSaving(false);

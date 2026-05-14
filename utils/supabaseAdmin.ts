@@ -11,10 +11,6 @@ function createAdminClient() {
   return createClient(supabaseUrl, supabaseServiceRoleKey);
 }
 
-/**
- * 서버 전용: 임시저장(published=false) 포함 전체 글 조회.
- * RLS를 우회하므로 service_role 키는 절대 클라이언트에 노출되면 안 됩니다.
- */
 export async function getAllPostsForAdmin(): Promise<Post[]> {
   const supabaseAdmin = createAdminClient();
   if (!supabaseAdmin) {
@@ -33,5 +29,33 @@ export async function getAllPostsForAdmin(): Promise<Post[]> {
   }
 
   return (data ?? []) as Post[];
+}
+
+export async function upsertPostAdmin(
+  post: Omit<Post, "id" | "created_at"> & { id?: string },
+): Promise<Post> {
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY가 설정되지 않았어요.");
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("posts")
+    .upsert(post)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data as Post;
+}
+
+export async function deletePostAdmin(id: string): Promise<void> {
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY가 설정되지 않았어요.");
+  }
+
+  const { error } = await supabaseAdmin.from("posts").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }
 

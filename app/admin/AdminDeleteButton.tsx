@@ -2,15 +2,18 @@
 
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { deletePost } from "@/utils/supabase";
 
 export default function AdminDeleteButton({ postId }: { postId: string }) {
   const router = useRouter();
 
   async function handleDelete() {
     if (!confirm("정말로 이 게시글을 삭제할까요?")) return;
-    const success = await deletePost(postId);
-    if (success) {
+    const res = await fetch("/api/admin/posts", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: postId }),
+    });
+    if (res.ok) {
       router.refresh();
     } else {
       alert("삭제에 실패했어요. 다시 시도해 주세요.");
