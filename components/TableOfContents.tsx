@@ -18,15 +18,19 @@ function slugify(text: string): string {
 }
 
 function extractHeadings(content: string): Heading[] {
-  // 코드블록(``` ... ```) 제거 후 파싱
   const stripped = content.replace(/```[\s\S]*?```/g, "");
   const headings: Heading[] = [];
+  const idCount: Record<string, number> = {};
   for (const line of stripped.split("\n")) {
     const match = line.match(/^(#{2,3})\s+(.+)/);
     if (!match) continue;
     const level = match[1].length;
     const text = match[2].trim();
-    headings.push({ id: slugify(text), text, level });
+    const base = slugify(text);
+    const count = idCount[base] ?? 0;
+    const id = count === 0 ? base : `${base}-${count}`;
+    idCount[base] = count + 1;
+    headings.push({ id, text, level });
   }
   return headings;
 }
