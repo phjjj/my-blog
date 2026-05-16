@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import ScrollTopButton from "@/components/ScrollTopButton";
+import TableOfContents from "@/components/TableOfContents";
 import { getPostBySlug, getPosts } from "@/utils/supabase";
 import Image from "next/image";
 import { resolveThumbnail } from "@/lib/postUtils";
@@ -65,6 +66,7 @@ export default async function PostPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-cream text-muted pb-32">
       <Header />
+      <TableOfContents content={post.content} />
 
       <main className="max-w-4xl mx-auto px-6 mt-12 md:mt-24 animate-slide-up">
         {/* Back Button */}
