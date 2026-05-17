@@ -31,21 +31,37 @@ export async function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://phj.dev";
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slugFromParam(slug));
 
   if (!post) return { title: "게시글을 찾을 수 없어요" };
 
+  const thumbnail = resolveThumbnail(post.image_url, post.content);
+  const url = `${BASE_URL}/post/${slug}`;
+
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
+      type: "article",
+      url,
       title: post.title,
       description: post.excerpt,
-      images: resolveThumbnail(post.image_url, post.content)
-        ? [{ url: resolveThumbnail(post.image_url, post.content)! }]
-        : [],
+      publishedTime: post.created_at,
+      authors: ["PHJ"],
+      images: thumbnail ? [{ url: thumbnail, alt: post.title }] : [],
+    },
+    twitter: {
+      card: thumbnail ? "summary_large_image" : "summary",
+      title: post.title,
+      description: post.excerpt,
+      images: thumbnail ? [thumbnail] : [],
     },
   };
 }

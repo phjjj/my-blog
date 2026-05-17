@@ -22,7 +22,10 @@ const notoSansKR = Noto_Sans_KR({
   display: "swap",
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://phj.dev";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: {
     default: "PHJ.dev",
     template: "%s | PHJ.dev",
@@ -31,8 +34,19 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
+    url: BASE_URL,
+    siteName: "PHJ.dev",
     title: "PHJ.dev",
     description: "생각과 코드 조각을 기록하는 공간",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PHJ.dev",
+    description: "생각과 코드 조각을 기록하는 공간",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
