@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Post } from "@/types/post";
 import { resolveThumbnail } from "@/lib/postUtils";
+import { categoryLabel } from "@/lib/categories";
 
 interface PostCardProps {
   post: Post;
@@ -20,6 +21,9 @@ export default function PostCard({ post }: PostCardProps) {
       <article className="group px-4 flex flex-row justify-between items-center py-6 border-b border-border gap-6 hover:bg-black/4 transition-colors cursor-pointer">
         {/* Text Content */}
         <div className="flex-1 min-w-0">
+          <div className="text-[11px] font-semibold text-crimson tracking-[0.12em] mb-1">
+            {categoryLabel(post.category)?.en}
+          </div>
           <div className="inline-flex items-start gap-2 group-hover:gap-3 transition-all mb-2">
             <h2 className="text-xl md:text-2xl font-bold text-crimson break-keep">{post.title}</h2>
           </div>

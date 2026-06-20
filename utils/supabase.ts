@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Post } from "@/types/post";
 import { MOCK_POSTS } from "@/lib/mockData";
+import { CATEGORY_KEYS, type CategoryKey } from "@/lib/categories";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -34,28 +35,61 @@ export async function getPosts(): Promise<Post[]> {
 export async function getPostsPage(
   limit: number = DEFAULT_PAGE_SIZE,
   offset: number = 0,
+  category?: CategoryKey,
 ): Promise<{ posts: Post[]; hasMore: boolean }> {
   if (!supabase) {
-    const posts = MOCK_POSTS.slice(offset, offset + limit);
-    return { posts, hasMore: offset + limit < MOCK_POSTS.length };
+    const all = category ? MOCK_POSTS.filter((p) => p.category === category) : MOCK_POSTS;
+    const posts = all.slice(offset, offset + limit);
+    return { posts, hasMore: offset + limit < all.length };
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("posts")
     .select("*")
     .eq("published", true)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
+  if (category) query = query.eq("category", category);
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("[supabase] getPostsPage error:", error.message);
-    const posts = MOCK_POSTS.slice(offset, offset + limit);
-    return { posts, hasMore: offset + limit < MOCK_POSTS.length };
+    const all = category ? MOCK_POSTS.filter((p) => p.category === category) : MOCK_POSTS;
+    const posts = all.slice(offset, offset + limit);
+    return { posts, hasMore: offset + limit < all.length };
   }
 
   const posts = (data ?? []) as Post[];
   const hasMore = posts.length === limit;
   return { posts, hasMore };
+}
+
+export type CategoryCounts = { total: number } & Record<CategoryKey, number>;
+
+function tallyCounts(categories: string[]): CategoryCounts {
+  const counts = { total: categories.length } as CategoryCounts;
+  for (const key of CATEGORY_KEYS) counts[key] = 0;
+  for (const c of categories) {
+    if (c in counts && c !== "total") counts[c as CategoryKey] += 1;
+  }
+  return counts;
+}
+
+// ponytail: 전체 published category 1회 조회 후 메모리 집계, 글 수천 넘어가면 group-by RPC로
+export async function getCategoryCounts(): Promise<CategoryCounts> {
+  if (!supabase) {
+    return tallyCounts(MOCK_POSTS.map((p) => p.category));
+  }
+
+  const { data, error } = await supabase.from("posts").select("category").eq("published", true);
+
+  if (error) {
+    console.error("[supabase] getCategoryCounts error:", error.message);
+    return tallyCounts(MOCK_POSTS.map((p) => p.category));
+  }
+
+  return tallyCounts((data ?? []).map((r) => (r as { category: string }).category));
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {

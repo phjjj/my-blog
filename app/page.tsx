@@ -1,14 +1,33 @@
+import Link from "next/link";
 import Header from "@/components/Header";
 import PostListInfinite from "@/components/PostListInfinite";
-import { getPostsPage } from "@/utils/supabase";
+import { getPostsPage, getCategoryCounts } from "@/utils/supabase";
+import { CATEGORIES, isCategoryKey } from "@/lib/categories";
 import { Github } from "lucide-react";
 
 export const revalidate = 60;
 
 const PAGE_SIZE = 10;
 
-export default async function HomePage() {
-  const { posts: initialPosts, hasMore: initialHasMore } = await getPostsPage(PAGE_SIZE, 0);
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(2, "0")}. ${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category: categoryParam } = await searchParams;
+  const category = isCategoryKey(categoryParam) ? categoryParam : undefined;
+
+  const [{ posts: initialPosts, hasMore: initialHasMore }, counts, { posts: recentPosts }] =
+    await Promise.all([
+      getPostsPage(PAGE_SIZE, 0, category),
+      getCategoryCounts(),
+      getPostsPage(5, 0),
+    ]);
 
   return (
     <div className="min-h-screen bg-cream text-muted pb-32">
@@ -37,11 +56,70 @@ export default async function HomePage() {
           <p className="text-subtle max-w-md text-sm leading-relaxed break-keep">생각과 코드 조각을 기록하는 공간</p>
         </header>
 
-        {/* Post List - Infinite Scroll */}
-        <section className="border-t">
-          <PostListInfinite initialPosts={initialPosts} initialHasMore={initialHasMore} />
-        </section>
+        {/* Category Filter */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          <FilterButton href="/" label={`전체 (${counts.total})`} active={!category} />
+          {CATEGORIES.map((c) => (
+            <FilterButton
+              key={c.key}
+              href={`/?category=${c.key}`}
+              label={`${c.label} (${counts[c.key]})`}
+              active={category === c.key}
+            />
+          ))}
+        </div>
+
+        {/* Content + Sidebar */}
+        <div className="lg:grid lg:grid-cols-[1fr_200px] lg:gap-12">
+          <section className="border-t min-w-0">
+            <PostListInfinite initialPosts={initialPosts} initialHasMore={initialHasMore} category={category} />
+          </section>
+
+          {/* Sidebar (desktop only) */}
+          <aside className="hidden lg:flex flex-col gap-8 pt-8">
+            <div>
+              <h3 className="text-[11px] font-bold text-crimson tracking-[0.12em] mb-3">CATEGORY</h3>
+              {CATEGORIES.map((c) => (
+                <Link
+                  key={c.key}
+                  href={`/?category=${c.key}`}
+                  className="flex justify-between items-center text-xs text-muted py-1.5 border-b border-border/60 hover:text-crimson transition-colors"
+                >
+                  <span>{c.label}</span>
+                  <span className="text-subtle">{counts[c.key]}</span>
+                </Link>
+              ))}
+            </div>
+
+            <div>
+              <h3 className="text-[11px] font-bold text-crimson tracking-[0.12em] mb-3">RECENT</h3>
+              {recentPosts.map((p) => (
+                <Link key={p.id} href={`/post/${p.slug}`} className="block mb-2.5 group">
+                  <div className="text-xs text-muted leading-snug break-keep group-hover:text-crimson transition-colors line-clamp-2">
+                    {p.title}
+                  </div>
+                  <div className="text-[10px] text-subtle mt-0.5">{formatDate(p.created_at)}</div>
+                </Link>
+              ))}
+            </div>
+          </aside>
+        </div>
       </main>
     </div>
+  );
+}
+
+function FilterButton({ href, label, active }: { href: string; label: string; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={`text-xs px-3.5 py-1.5 rounded-full border transition-colors ${
+        active
+          ? "bg-crimson text-cream border-crimson"
+          : "border-border text-subtle hover:text-crimson hover:border-crimson"
+      }`}
+    >
+      {label}
+    </Link>
   );
 }

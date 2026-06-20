@@ -7,6 +7,7 @@ import { Save, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { supabase, uploadImage } from "@/utils/supabase";
 import type { Post } from "@/types/post";
+import { CATEGORIES, type CategoryKey } from "@/lib/categories";
 
 function generateSlug(title: string): string {
   return title
@@ -27,6 +28,7 @@ function AdminWritePageInner() {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [category, setCategory] = useState<CategoryKey>("dev");
   const [published, setPublished] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
@@ -57,6 +59,7 @@ function AdminWritePageInner() {
         setExcerpt(post.excerpt);
         setContent(post.content);
         setImageUrl(post.image_url || "");
+        setCategory(post.category ?? "dev");
         setPublished(post.published);
         setFetchStatus("done");
       });
@@ -118,6 +121,7 @@ function AdminWritePageInner() {
       content: content.trim(),
       image_url: imageUrl.trim(),
       tags: [],
+      category,
       published: shouldPublish !== undefined ? shouldPublish : published,
     };
     try {
@@ -235,6 +239,27 @@ function AdminWritePageInner() {
               placeholder="목록에 표시될 한두 문장"
               className="w-full bg-transparent border-b border-border py-1.5 text-sm text-muted outline-none focus:border-crimson transition-colors placeholder:text-border"
             />
+          </div>
+          <div className="md:col-span-1">
+            <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
+              카테고리
+            </label>
+            <div className="flex gap-2 pt-1">
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => setCategory(c.key)}
+                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                    category === c.key
+                      ? "bg-crimson text-cream border-crimson"
+                      : "border-border text-subtle hover:text-crimson hover:border-crimson"
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

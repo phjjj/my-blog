@@ -9,11 +9,13 @@ const PAGE_SIZE = 10;
 interface PostListInfiniteProps {
   initialPosts: Post[];
   initialHasMore: boolean;
+  category?: string;
 }
 
 export default function PostListInfinite({
   initialPosts,
   initialHasMore,
+  category,
 }: PostListInfiniteProps) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [page, setPage] = useState(1);
@@ -26,8 +28,9 @@ export default function PostListInfinite({
     setIsLoading(true);
     const nextPage = page + 1;
     try {
+      const categoryParam = category ? `&category=${category}` : "";
       const res = await fetch(
-        `/api/posts?page=${nextPage}&limit=${PAGE_SIZE}`,
+        `/api/posts?page=${nextPage}&limit=${PAGE_SIZE}${categoryParam}`,
       );
       const data = await res.json();
       if (!res.ok) throw new Error("Failed to fetch");
@@ -39,7 +42,7 @@ export default function PostListInfinite({
     } finally {
       setIsLoading(false);
     }
-  }, [page, hasMore, isLoading]);
+  }, [page, hasMore, isLoading, category]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
