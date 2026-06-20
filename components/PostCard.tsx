@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Post } from "@/types/post";
 import { resolveThumbnail } from "@/lib/postUtils";
-import { categoryLabel } from "@/lib/categories";
 
 interface PostCardProps {
   post: Post;
@@ -22,7 +21,7 @@ export default function PostCard({ post }: PostCardProps) {
         {/* Text Content */}
         <div className="flex-1 min-w-0">
           <div className="text-[11px] font-semibold text-crimson tracking-[0.12em] mb-1">
-            {categoryLabel(post.category)?.en}
+            {post.tags.map((t) => t.toUpperCase()).join(" · ")}
           </div>
           <div className="inline-flex items-start gap-2 group-hover:gap-3 transition-all mb-2">
             <h2 className="text-xl md:text-2xl font-bold text-crimson break-keep">{post.title}</h2>

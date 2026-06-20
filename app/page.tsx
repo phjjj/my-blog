@@ -67,7 +67,7 @@ export default async function HomePage({
           </section>
 
           {/* Sidebar (desktop only) */}
-          <aside className="hidden lg:flex flex-col gap-8 pt-8">
+          <aside className="hidden lg:flex flex-col gap-8">
             <div>
               <h3 className="text-[11px] font-bold text-crimson tracking-[0.12em] mb-3">CATEGORY</h3>
               {CATEGORIES.map((c) => (
@@ -77,7 +77,7 @@ export default async function HomePage({
                   scroll={false}
                   className="flex justify-between items-center text-xs text-muted py-1.5 border-b border-border/60 hover:text-crimson transition-colors"
                 >
-                  <span>{c.label}</span>
+                  <span>{c.en}</span>
                   <span className="text-subtle">{counts[c.key]}</span>
                 </Link>
               ))}

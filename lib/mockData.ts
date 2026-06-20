@@ -8,8 +8,7 @@ export const MOCK_POSTS: Post[] = [
     excerpt:
       "서버 컴포넌트가 상태 관리, 데이터 페칭, 그리고 번들 사이즈를 대하는 방식을 어떻게 변화시키는지 깊이 파헤쳐 봅니다. 무거운 클라이언트 사이드 자바스크립트와 작별하세요.",
     image_url: "https://images.unsplash.com/photo-1555099962-4199c345e5dd?auto=format&fit=crop&q=80&w=800&h=450",
-    tags: [],
-    category: "dev",
+    tags: ["dev"],
     created_at: "2026-02-24T00:00:00.000Z",
     published: true,
     content: `리액트(React) 생태계는 끊임없이 진화하고 있습니다. 클라이언트 사이드 렌더링(CSR)의 한계를 극복하기 위해 등장한 서버 컴포넌트(React Server Components, RSC)는 이제 선택이 아닌 필수가 되어가고 있습니다. 이 글에서는 RSC가 우리의 사고방식을 어떻게 바꾸고 있는지 정리해 봅니다.
@@ -60,8 +59,7 @@ export default async function BlogPost({ params }) {
     excerpt:
       "왜 아직도 모든 곳에 flexbox만 사용하고 계신가요? 억지스러운 마진(margin) 없이 순수 CSS 그리드와 서브그리드 속성만으로 복잡한 비대칭 레이아웃을 구현하는 방법을 탐구합니다.",
     image_url: "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?auto=format&fit=crop&q=80&w=800&h=450",
-    tags: [],
-    category: "design",
+    tags: ["design"],
     created_at: "2026-02-18T00:00:00.000Z",
     published: true,
     content: `CSS Grid는 2017년에 대부분의 브라우저에 도입되었지만, 많은 개발자들이 여전히 모든 레이아웃을 Flexbox로 해결하려 합니다. Grid가 빛을 발하는 순간은 언제인지, 그리고 Subgrid라는 게임 체인저에 대해 이야기합니다.
@@ -104,8 +102,7 @@ CSS Grid와 Subgrid를 활용하면 복잡한 편집 디자인도 깔끔하고 �
     excerpt:
       "무거운 프레임워크에서 한 걸음 물러나기. Go 언어의 Fiber 프레임워크를 사용하여 200줄 미만의 코드로 번개처럼 빠르고 동시성이 높은 마이크로서비스를 구축한 방법을 소개합니다.",
     image_url: "https://images.unsplash.com/photo-1516259762381-22954d7d3ad8?auto=format&fit=crop&q=80&w=800&h=450",
-    tags: [],
-    category: "dev",
+    tags: ["dev"],
     created_at: "2026-01-30T00:00:00.000Z",
     published: true,
     content: `Node.js와 Express를 벗어나 Go를 선택한 건 단순한 호기심에서 시작되었습니다. 하지만 결과는 놀라웠습니다. 200줄의 코드로 수천 건의 동시 요청을 처리하는 API가 탄생했습니다.
@@ -150,8 +147,7 @@ Go와 Fiber의 조합은 프론트엔드 개발자도 쉽게 고성능 백엔드
     excerpt:
       "마우스는 필요 없습니다. 현재 제가 사용 중인 터미널 중심의 개발 환경, dotfiles, 그리고 없어서는 안 될 커스텀 플러그인들을 완벽하게 안내합니다.",
     image_url: "https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&q=80&w=800&h=450",
-    tags: [],
-    category: "retrospect",
+    tags: ["retrospect"],
     created_at: "2025-12-12T00:00:00.000Z",
     published: true,
     content: `VS Code를 사용하다 Neovim으로 전향한 지 1년이 지났습니다. 처음 2주는 고통스러웠지만, 지금은 마우스 없이 더 빠르게 코드를 작성하고 있습니다.

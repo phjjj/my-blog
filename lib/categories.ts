@@ -1,7 +1,7 @@
 export const CATEGORIES = [
-  { key: "dev", label: "개발", en: "DEV" },
-  { key: "design", label: "디자인", en: "DESIGN" },
-  { key: "retrospect", label: "회고", en: "RETROSPECT" },
+  { key: "dev", en: "DEV" },
+  { key: "design", en: "DESIGN" },
+  { key: "retrospect", en: "RETROSPECT" },
 ] as const;
 
 export type CategoryKey = (typeof CATEGORIES)[number]["key"];
@@ -12,6 +12,3 @@ export function isCategoryKey(value: string | null | undefined): value is Catego
   return !!value && (CATEGORY_KEYS as string[]).includes(value);
 }
 
-export function categoryLabel(key: string) {
-  return CATEGORIES.find((c) => c.key === key);
-}

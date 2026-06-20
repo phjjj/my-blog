@@ -7,7 +7,6 @@ import { Save, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { supabase, uploadImage } from "@/utils/supabase";
 import type { Post } from "@/types/post";
-import type { CategoryKey } from "@/lib/categories";
 
 function generateSlug(title: string): string {
   return title
@@ -28,7 +27,7 @@ function AdminWritePageInner() {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [category, setCategory] = useState<CategoryKey>("dev");
+  const [tagsInput, setTagsInput] = useState("");
   const [published, setPublished] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
@@ -59,7 +58,7 @@ function AdminWritePageInner() {
         setExcerpt(post.excerpt);
         setContent(post.content);
         setImageUrl(post.image_url || "");
-        setCategory(post.category ?? "dev");
+        setTagsInput((post.tags ?? []).join(", "));
         setPublished(post.published);
         setFetchStatus("done");
       });
@@ -120,8 +119,7 @@ function AdminWritePageInner() {
       excerpt: excerpt.trim(),
       content: content.trim(),
       image_url: imageUrl.trim(),
-      tags: [],
-      category,
+      tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       published: shouldPublish !== undefined ? shouldPublish : published,
     };
     try {
@@ -242,13 +240,13 @@ function AdminWritePageInner() {
           </div>
           <div className="md:col-span-1">
             <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
-              카테고리
+              태그
             </label>
             <input
               type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value as CategoryKey)}
-              placeholder="dev / design / retrospect"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder="dev, AI, design"
               className="w-full bg-transparent border-b border-border py-1.5 text-sm font-mono text-muted outline-none focus:border-crimson transition-colors placeholder:text-border"
             />
           </div>

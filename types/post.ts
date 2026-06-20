@@ -1,5 +1,3 @@
-import type { CategoryKey } from "@/lib/categories";
-
 export interface Post {
   id: string;
   slug: string;
@@ -8,7 +6,6 @@ export interface Post {
   content: string;
   image_url: string;
   tags: string[];
-  category: CategoryKey;
   created_at: string;
   published: boolean;
 }

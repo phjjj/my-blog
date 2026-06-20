@@ -40,7 +40,7 @@ export default function CategoryFilter({ counts, activeCategory }: CategoryFilte
               : "border-border text-subtle hover:text-crimson hover:border-crimson"
           }`}
         >
-          {c.label} ({counts[c.key]})
+          {c.en} ({counts[c.key]})
         </button>
       ))}
     </div>

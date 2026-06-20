@@ -38,7 +38,7 @@ export async function getPostsPage(
   category?: CategoryKey,
 ): Promise<{ posts: Post[]; hasMore: boolean }> {
   if (!supabase) {
-    const all = category ? MOCK_POSTS.filter((p) => p.category === category) : MOCK_POSTS;
+    const all = category ? MOCK_POSTS.filter((p) => p.tags.includes(category)) : MOCK_POSTS;
     const posts = all.slice(offset, offset + limit);
     return { posts, hasMore: offset + limit < all.length };
   }
@@ -49,13 +49,13 @@ export async function getPostsPage(
     .eq("published", true)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
-  if (category) query = query.eq("category", category);
+  if (category) query = query.contains("tags", [category]);
 
   const { data, error } = await query;
 
   if (error) {
     console.error("[supabase] getPostsPage error:", error.message);
-    const all = category ? MOCK_POSTS.filter((p) => p.category === category) : MOCK_POSTS;
+    const all = category ? MOCK_POSTS.filter((p) => p.tags.includes(category)) : MOCK_POSTS;
     const posts = all.slice(offset, offset + limit);
     return { posts, hasMore: offset + limit < all.length };
   }
@@ -67,11 +67,13 @@ export async function getPostsPage(
 
 export type CategoryCounts = { total: number } & Record<CategoryKey, number>;
 
-function tallyCounts(categories: string[]): CategoryCounts {
-  const counts = { total: categories.length } as CategoryCounts;
+function tallyCounts(tagArrays: string[][]): CategoryCounts {
+  const counts = { total: tagArrays.length } as CategoryCounts;
   for (const key of CATEGORY_KEYS) counts[key] = 0;
-  for (const c of categories) {
-    if (c in counts && c !== "total") counts[c as CategoryKey] += 1;
+  for (const tags of tagArrays) {
+    for (const t of tags) {
+      if (t in counts && t !== "total") counts[t as CategoryKey] += 1;
+    }
   }
   return counts;
 }
@@ -79,17 +81,17 @@ function tallyCounts(categories: string[]): CategoryCounts {
 // ponytail: 전체 published category 1회 조회 후 메모리 집계, 글 수천 넘어가면 group-by RPC로
 export async function getCategoryCounts(): Promise<CategoryCounts> {
   if (!supabase) {
-    return tallyCounts(MOCK_POSTS.map((p) => p.category));
+    return tallyCounts(MOCK_POSTS.map((p) => p.tags));
   }
 
-  const { data, error } = await supabase.from("posts").select("category").eq("published", true);
+  const { data, error } = await supabase.from("posts").select("tags").eq("published", true);
 
   if (error) {
     console.error("[supabase] getCategoryCounts error:", error.message);
-    return tallyCounts(MOCK_POSTS.map((p) => p.category));
+    return tallyCounts(MOCK_POSTS.map((p) => p.tags));
   }
 
-  return tallyCounts((data ?? []).map((r) => (r as { category: string }).category));
+  return tallyCounts((data ?? []).map((r) => (r as { tags: string[] }).tags ?? []));
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
