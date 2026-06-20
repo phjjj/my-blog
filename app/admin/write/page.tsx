@@ -7,7 +7,7 @@ import { Save, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { supabase, uploadImage } from "@/utils/supabase";
 import type { Post } from "@/types/post";
-import { CATEGORIES, type CategoryKey } from "@/lib/categories";
+import type { CategoryKey } from "@/lib/categories";
 
 function generateSlug(title: string): string {
   return title
@@ -244,22 +244,13 @@ function AdminWritePageInner() {
             <label className="block text-[10px] font-semibold tracking-widest text-subtle mb-1.5 uppercase">
               카테고리
             </label>
-            <div className="flex gap-2 pt-1">
-              {CATEGORIES.map((c) => (
-                <button
-                  key={c.key}
-                  type="button"
-                  onClick={() => setCategory(c.key)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                    category === c.key
-                      ? "bg-crimson text-cream border-crimson"
-                      : "border-border text-subtle hover:text-crimson hover:border-crimson"
-                  }`}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </div>
+            <input
+              type="text"
+              value={category}
+              onChange={(e) => setCategory(e.target.value as CategoryKey)}
+              placeholder="dev / design / retrospect"
+              className="w-full bg-transparent border-b border-border py-1.5 text-sm font-mono text-muted outline-none focus:border-crimson transition-colors placeholder:text-border"
+            />
           </div>
         </div>
       )}

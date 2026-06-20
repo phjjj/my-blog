@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import PostListInfinite from "@/components/PostListInfinite";
+import CategoryFilter from "@/components/CategoryFilter";
 import { getPostsPage, getCategoryCounts } from "@/utils/supabase";
 import { CATEGORIES, isCategoryKey } from "@/lib/categories";
 import { Github } from "lucide-react";
@@ -53,26 +54,16 @@ export default async function HomePage({
             <Github />
           </a>
 
-          <p className="text-subtle max-w-md text-sm leading-relaxed break-keep">생각과 코드 조각을 기록하는 공간</p>
+          <p className="text-subtle max-w-md text-sm leading-relaxed break-keep">개발 기록 노트</p>
         </header>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          <FilterButton href="/" label={`전체 (${counts.total})`} active={!category} />
-          {CATEGORIES.map((c) => (
-            <FilterButton
-              key={c.key}
-              href={`/?category=${c.key}`}
-              label={`${c.label} (${counts[c.key]})`}
-              active={category === c.key}
-            />
-          ))}
-        </div>
+        {/* Category Filter — client component for instant feedback */}
+        <CategoryFilter counts={counts} activeCategory={category} />
 
         {/* Content + Sidebar */}
         <div className="lg:grid lg:grid-cols-[1fr_200px] lg:gap-12">
           <section className="border-t min-w-0">
-            <PostListInfinite initialPosts={initialPosts} initialHasMore={initialHasMore} category={category} />
+            <PostListInfinite key={category ?? "all"} initialPosts={initialPosts} initialHasMore={initialHasMore} category={category} />
           </section>
 
           {/* Sidebar (desktop only) */}
@@ -83,6 +74,7 @@ export default async function HomePage({
                 <Link
                   key={c.key}
                   href={`/?category=${c.key}`}
+                  scroll={false}
                   className="flex justify-between items-center text-xs text-muted py-1.5 border-b border-border/60 hover:text-crimson transition-colors"
                 >
                   <span>{c.label}</span>
@@ -106,20 +98,5 @@ export default async function HomePage({
         </div>
       </main>
     </div>
-  );
-}
-
-function FilterButton({ href, label, active }: { href: string; label: string; active: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={`text-xs px-3.5 py-1.5 rounded-full border transition-colors ${
-        active
-          ? "bg-crimson text-cream border-crimson"
-          : "border-border text-subtle hover:text-crimson hover:border-crimson"
-      }`}
-    >
-      {label}
-    </Link>
   );
 }
