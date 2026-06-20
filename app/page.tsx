@@ -2,8 +2,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import PostListInfinite from "@/components/PostListInfinite";
 import CategoryFilter from "@/components/CategoryFilter";
-import { getPostsPage, getCategoryCounts } from "@/utils/supabase";
-import { CATEGORIES, isCategoryKey } from "@/lib/categories";
+import { getPostsPage, getTagCounts } from "@/utils/supabase";
 import { Github } from "lucide-react";
 
 export const revalidate = 60;
@@ -18,15 +17,14 @@ function formatDate(dateStr: string): string {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ tag?: string }>;
 }) {
-  const { category: categoryParam } = await searchParams;
-  const category = isCategoryKey(categoryParam) ? categoryParam : undefined;
+  const { tag } = await searchParams;
 
   const [{ posts: initialPosts, hasMore: initialHasMore }, counts, { posts: recentPosts }] =
     await Promise.all([
-      getPostsPage(PAGE_SIZE, 0, category),
-      getCategoryCounts(),
+      getPostsPage(PAGE_SIZE, 0, tag),
+      getTagCounts(),
       getPostsPage(5, 0),
     ]);
 
@@ -57,28 +55,28 @@ export default async function HomePage({
           <p className="text-subtle max-w-md text-sm leading-relaxed break-keep">개발 기록 노트</p>
         </header>
 
-        {/* Category Filter — client component for instant feedback */}
-        <CategoryFilter counts={counts} activeCategory={category} />
+        {/* Tag Filter */}
+        <CategoryFilter counts={counts} activeTag={tag} />
 
         {/* Content + Sidebar */}
         <div className="lg:grid lg:grid-cols-[1fr_200px] lg:gap-12">
           <section className="border-t min-w-0">
-            <PostListInfinite key={category ?? "all"} initialPosts={initialPosts} initialHasMore={initialHasMore} category={category} />
+            <PostListInfinite key={tag ?? "all"} initialPosts={initialPosts} initialHasMore={initialHasMore} category={tag} />
           </section>
 
           {/* Sidebar (desktop only) */}
           <aside className="hidden lg:flex flex-col gap-8">
             <div>
               <h3 className="text-[11px] font-bold text-crimson tracking-[0.12em] mb-3">CATEGORY</h3>
-              {CATEGORIES.map((c) => (
+              {Object.entries(counts.tags).map(([t, count]) => (
                 <Link
-                  key={c.key}
-                  href={`/?category=${c.key}`}
+                  key={t}
+                  href={`/?tag=${encodeURIComponent(t)}`}
                   scroll={false}
                   className="flex justify-between items-center text-xs text-muted py-1.5 border-b border-border/60 hover:text-crimson transition-colors"
                 >
-                  <span>{c.en}</span>
-                  <span className="text-subtle">{counts[c.key]}</span>
+                  <span>{t}</span>
+                  <span className="text-subtle">{count}</span>
                 </Link>
               ))}
             </div>

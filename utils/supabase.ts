@@ -1,7 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Post } from "@/types/post";
 import { MOCK_POSTS } from "@/lib/mockData";
-import { CATEGORY_KEYS, type CategoryKey } from "@/lib/categories";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -35,10 +34,10 @@ export async function getPosts(): Promise<Post[]> {
 export async function getPostsPage(
   limit: number = DEFAULT_PAGE_SIZE,
   offset: number = 0,
-  category?: CategoryKey,
+  tag?: string,
 ): Promise<{ posts: Post[]; hasMore: boolean }> {
   if (!supabase) {
-    const all = category ? MOCK_POSTS.filter((p) => p.tags.includes(category)) : MOCK_POSTS;
+    const all = tag ? MOCK_POSTS.filter((p) => p.tags.includes(tag)) : MOCK_POSTS;
     const posts = all.slice(offset, offset + limit);
     return { posts, hasMore: offset + limit < all.length };
   }
@@ -49,13 +48,13 @@ export async function getPostsPage(
     .eq("published", true)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
-  if (category) query = query.contains("tags", [category]);
+  if (tag) query = query.contains("tags", [tag]);
 
   const { data, error } = await query;
 
   if (error) {
     console.error("[supabase] getPostsPage error:", error.message);
-    const all = category ? MOCK_POSTS.filter((p) => p.tags.includes(category)) : MOCK_POSTS;
+    const all = tag ? MOCK_POSTS.filter((p) => p.tags.includes(tag)) : MOCK_POSTS;
     const posts = all.slice(offset, offset + limit);
     return { posts, hasMore: offset + limit < all.length };
   }
@@ -65,21 +64,20 @@ export async function getPostsPage(
   return { posts, hasMore };
 }
 
-export type CategoryCounts = { total: number } & Record<CategoryKey, number>;
+export type TagCounts = { total: number; tags: Record<string, number> };
 
-function tallyCounts(tagArrays: string[][]): CategoryCounts {
-  const counts = { total: tagArrays.length } as CategoryCounts;
-  for (const key of CATEGORY_KEYS) counts[key] = 0;
-  for (const tags of tagArrays) {
-    for (const t of tags) {
-      if (t in counts && t !== "total") counts[t as CategoryKey] += 1;
+// ponytail: 전체 published tags 1회 조회 후 메모리 집계, 글 수천 넘어가면 group-by RPC로
+function tallyCounts(tagArrays: string[][]): TagCounts {
+  const tags: Record<string, number> = {};
+  for (const arr of tagArrays) {
+    for (const t of arr) {
+      tags[t] = (tags[t] ?? 0) + 1;
     }
   }
-  return counts;
+  return { total: tagArrays.length, tags };
 }
 
-// ponytail: 전체 published category 1회 조회 후 메모리 집계, 글 수천 넘어가면 group-by RPC로
-export async function getCategoryCounts(): Promise<CategoryCounts> {
+export async function getTagCounts(): Promise<TagCounts> {
   if (!supabase) {
     return tallyCounts(MOCK_POSTS.map((p) => p.tags));
   }
@@ -87,7 +85,7 @@ export async function getCategoryCounts(): Promise<CategoryCounts> {
   const { data, error } = await supabase.from("posts").select("tags").eq("published", true);
 
   if (error) {
-    console.error("[supabase] getCategoryCounts error:", error.message);
+    console.error("[supabase] getTagCounts error:", error.message);
     return tallyCounts(MOCK_POSTS.map((p) => p.tags));
   }
 

@@ -2,15 +2,14 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CATEGORIES } from "@/lib/categories";
-import type { CategoryCounts } from "@/utils/supabase";
+import type { TagCounts } from "@/utils/supabase";
 
 interface CategoryFilterProps {
-  counts: CategoryCounts;
-  activeCategory?: string;
+  counts: TagCounts;
+  activeTag?: string;
 }
 
-export default function CategoryFilter({ counts, activeCategory }: CategoryFilterProps) {
+export default function CategoryFilter({ counts, activeTag }: CategoryFilterProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -23,24 +22,24 @@ export default function CategoryFilter({ counts, activeCategory }: CategoryFilte
       <button
         onClick={() => navigate("/")}
         className={`text-xs px-3.5 py-1.5 rounded-full border transition-colors ${
-          !activeCategory
+          !activeTag
             ? "bg-crimson text-cream border-crimson"
             : "border-border text-subtle hover:text-crimson hover:border-crimson"
         }`}
       >
         전체 ({counts.total})
       </button>
-      {CATEGORIES.map((c) => (
+      {Object.entries(counts.tags).map(([tag, count]) => (
         <button
-          key={c.key}
-          onClick={() => navigate(`/?category=${c.key}`)}
+          key={tag}
+          onClick={() => navigate(`/?tag=${encodeURIComponent(tag)}`)}
           className={`text-xs px-3.5 py-1.5 rounded-full border transition-colors ${
-            activeCategory === c.key
+            activeTag === tag
               ? "bg-crimson text-cream border-crimson"
               : "border-border text-subtle hover:text-crimson hover:border-crimson"
           }`}
         >
-          {c.en} ({counts[c.key]})
+          {tag} ({count})
         </button>
       ))}
     </div>
