@@ -24,7 +24,7 @@ export default function PostCard({ post }: PostCardProps) {
             {post.tags.map((t) => t.toUpperCase()).join(" · ")}
           </div>
           <div className="inline-flex items-start gap-2 group-hover:gap-3 transition-all mb-2">
-            <h2 className="text-xl md:text-2xl font-bold text-crimson break-keep">{post.title}</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-muted break-keep">{post.title}</h2>
           </div>
 
           <p className="text-subtle text-sm leading-relaxed break-keep line-clamp-2">{post.excerpt}</p>
