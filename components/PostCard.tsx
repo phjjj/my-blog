@@ -17,7 +17,7 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <Link href={`/post/${post.slug}`} scroll={false}>
-      <article className="group px-5 flex flex-row justify-between items-center py-6 gap-6 bg-[#f0f0e8] hover:bg-[#e8e8e0] transition-colors cursor-pointer mb-2">
+      <article className="group px-5 flex flex-row justify-between items-center py-6 gap-6 hover:bg-black/4 transition-colors cursor-pointer mb-2">
         {/* Text Content */}
         <div className="flex-1 min-w-0">
           <div className="text-[11px] font-semibold text-crimson tracking-[0.12em] mb-1">
